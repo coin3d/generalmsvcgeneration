@@ -5,6 +5,15 @@ usage() {
   echo "  $0 <SolutionName> [FirstMSVCRev] [LastMSVCRev]"
 }
 
+error() {
+  echo $@ >/dev/stderr
+}
+
+die() {
+  error $@
+  exit 1
+}
+
 #Defaults
 FirstMSVCRev=7
 LastMSVCRev=10
@@ -24,7 +33,7 @@ cd $(dirname $0)/../..
 cd build/general
 for i in $(seq ${FirstMSVCRev} ${LastMSVCRev})
 do
-  ./generate.bat msvc$i ${SolutionName}
+  ./generate.bat msvc$i ${SolutionName} || die "Unable to generate solution for msvc$i"
 done
 
 #msvc6 is only our starting point, but cannot be built.
