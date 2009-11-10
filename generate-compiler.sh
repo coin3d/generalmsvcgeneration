@@ -3,7 +3,10 @@
 upgrade() {
   echo Upgrading from $1 to $2
   devenv /upgrade $3.sln
-  rm -rf Backup UpgradeLog.XML _UpgradeReport_Files *.user *.old *.dsw *.suo *.dsp
+  if ${CLEAN}
+  then
+    rm -rf Backup UpgradeLog.XML _UpgradeReport_Files *.user *.old *.dsw *.suo *.dsp
+  fi
 }
 
 error() {
@@ -14,6 +17,8 @@ die() {
   error $@
   exit 1
 }
+
+CLEAN=true
 
 case $1
 in 
@@ -33,9 +38,12 @@ then
 fi
 
 cd $(dirname $0)/..
-rm -rf $1
+
+#We always want to clean the old stuff
+rm -rf $1 || die Could not remove old project folder
 mkdir $1
 cd $1
+
 ../misc/generate.sh
 if [ ${compilerversion} -gt 6 ]
 then
@@ -46,7 +54,10 @@ then
   do
     fName=$(basename ${file} .dsp)
     cscript.exe ../general/Convert.js $(cygpath -w $(pwd)/${file}) $(cygpath -w $(pwd)/${fName}.vcproj)
-    rm ${file}
+    if ${CLEAN}
+    then
+      rm ${file}
+    fi
   done
 fi
 if [ ${compilerversion} -gt 7 ]
